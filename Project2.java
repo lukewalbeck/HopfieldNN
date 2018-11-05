@@ -1,17 +1,20 @@
-import com.sun.tools.internal.ws.wsdl.document.http.HTTPOperation;
-
 import java.io.BufferedReader;
 import java.io.FileReader;
 
 public class Project2 {
 
-    public static int[] readDataFile(String fileName, int length, int width) {
+    public static int[] readDataFile(String fileName, int length, int width, int numPatterns) {
         try {
             BufferedReader bf = new BufferedReader(new FileReader(fileName));
-            int[] initialArray = new int[length * width];
+            int[] initialArray = new int[numPatterns * length * width];
             String currLine;
             int index = 0;
-            while((currLine = bf.readLine()) != null) { //TODO: change this so that it reads in one pattern each time
+            int lineCount = 0;
+            while((currLine = bf.readLine()) != null) {
+                lineCount++;
+                if(lineCount == 10) {
+                    lineCount = -2;
+                }
                 if(!currLine.equals("")) {
                     String[] splitLine = currLine.split("");
                     for(int i = 0; i < length; i++) {
@@ -20,16 +23,21 @@ public class Project2 {
                                 initialArray[index++] = 1;
                             }
                             else {
-                                index++;
+                                initialArray[index++] = -1;
                             }
                         }
                         else {
-                            index++;
+                            initialArray[index++] = -1;
                         }
                     }
                 }
+                else if(lineCount <= 0) {
+
+                }
                 else {
-                    index +=10;
+                    for(int i = 0; i < 10; i++) {
+                        initialArray[index++] = -1;
+                    }
                 }
             }
             return initialArray;
@@ -40,12 +48,39 @@ public class Project2 {
         return null;
     }
 
-    public static void main(String[] args) {
-        int[] training = readDataFile("training.txt", 10, 10);
-        Hopfield hoppy = new Hopfield(100, 100);
-        hoppy.train(training);
-        int[] testing = readDataFile("testing.txt", 10, 10);
-        hoppy.test(testing);
+    public static void printMatrix(int[] array, int length, int width) {
+        for(int i = 0; i < length; i++) {
+            for(int j = 0; j < width; j++) {
+                if(array[(j*length) + i] == -1) {
+                    System.out.print(" ");
+                }
+                else {
+                    System.out.print("0 ");
+                }
 
+            }
+            System.out.println();
+        }
+        System.out.println();
+    }
+
+
+
+    public static void main(String[] args) {
+        int numPatterns = 5;
+        int numElements = 100;
+        int length = 10;
+        int width = 10;
+        int[] training = readDataFile("training.txt", length, width, numPatterns);
+        Hopfield hoppy = new Hopfield(numElements, numElements);
+        for(int i = 0; i < numPatterns; i++) {
+            hoppy.train(training, i);
+        }
+        int[] testing = readDataFile("testing.txt", length, width, numPatterns);
+        for(int i = 0; i < numPatterns; i++) {
+            int[] printMe = hoppy.test(testing, numElements, i);
+            printMatrix(printMe, length, width);
+        }
+        System.out.println("Made it");
     }
 }
