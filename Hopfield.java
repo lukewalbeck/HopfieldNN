@@ -52,7 +52,7 @@ public class Hopfield {
         return y;
     }
 
-    public int[] createOrdering(int size) {
+    private int[] createOrdering(int size) {
         int[] array = new int[size];
         for(int i = 0; i < size; i++) {
             array[i] = i;
@@ -61,8 +61,7 @@ public class Hopfield {
         return array;
     }
 
-    private static void shuffleArray(int[] array)
-    {
+    private static void shuffleArray(int[] array) {
         int index, temp;
         Random random = new Random();
         for (int i = array.length - 1; i > 0; i--)
@@ -74,7 +73,7 @@ public class Hopfield {
         }
     }
 
-    public int computationOfY(int index, int[] x, int[] y) {
+    private int computationOfY(int index, int[] x, int[] y) {
         int sum = x[index];
         for(int i = 0; i < y.length; i++) {
             sum += (y[i] * weights[index][i]); //accessing weights row-wise

@@ -11,8 +11,8 @@ public class Project2 {
             int lineCount = 0;
             while((currLine = bf.readLine()) != null) {
                 lineCount++;
-                if(lineCount == 10) {
-                    lineCount = -2;
+                if(lineCount == width) {
+                    lineCount = -2; //assumes there's two empty lines between each pattern
                 }
                 if(!currLine.equals("")) {
                     String[] splitLine = currLine.split("");
@@ -34,7 +34,7 @@ public class Project2 {
 
                 }
                 else {
-                    for(int i = 0; i < 10; i++) {
+                    for(int i = 0; i < width; i++) {
                         initialArray[index++] = -1;
                     }
                 }
@@ -87,6 +87,18 @@ public class Project2 {
             hoppy.train(training, i);
         }
         int[] testing = readDataFile("testing.txt", length, width, numPatterns);
+
+        //empty previous contents of file
+        try {
+            FileWriter writer = new FileWriter("output.txt", false);
+            writer.write("");
+            writer.close();
+        }
+        catch(IOException e) {
+            e.printStackTrace();
+        }
+
+
         for(int i = 0; i < numPatterns; i++) {
             int[] printMe = hoppy.test(testing, numElements, i);
             printMatrix(printMe, length, width);
