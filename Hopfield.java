@@ -3,15 +3,19 @@ import java.util.Random;
 
 public class Hopfield {
     int[][] weights;
+    int m_length;
+    int m_width;
 
-    public Hopfield(int size) { //size must be equal to sampleDat.length
-        weights = new int[size][size];
+    public Hopfield(int length, int width) { //size must be equal to sampleDat.length
+        m_length = length;
+        m_width = width;
+        weights = new int[m_length][m_width];
     }
 
     //sampleDat is for a single pattern, this will be run n pattern times in main
     public void train(int[] sampleDat) {
-        for(int i = 0; i < sampleDat.length; i++) {
-            for(int j = 0; j < sampleDat.length; j++) {
+        for(int i = 0; i < m_length; i++) {
+            for(int j = 0; j < m_width; j++) {
                 if(j == i) {
                     weights[i][j] += 0;
                 }
@@ -39,6 +43,7 @@ public class Hopfield {
             //compare y to testDat, if not equal, testDat equals y
             if(Arrays.equals(y, testDat)) {
                 converged = true;
+                System.out.println("here");
             }
             else {
                 testDat = y;
