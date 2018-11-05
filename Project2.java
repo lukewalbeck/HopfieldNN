@@ -1,5 +1,4 @@
-import java.io.BufferedReader;
-import java.io.FileReader;
+import java.io.*;
 
 public class Project2 {
 
@@ -49,19 +48,30 @@ public class Project2 {
     }
 
     public static void printMatrix(int[] array, int length, int width) {
-        for(int i = 0; i < length; i++) {
-            for(int j = 0; j < width; j++) {
-                if(array[(j*length) + i] == -1) {
-                    System.out.print(" ");
-                }
-                else {
-                    System.out.print("0 ");
-                }
+        try {
+            FileWriter writer = new FileWriter("output.txt", true);
+            BufferedWriter bufferedWriter = new BufferedWriter(writer);
+            for(int i = 0; i < length; i++) {
+                for(int j = 0; j < width; j++) {
+                    if(array[(j*length) + i] == -1) {
+                        bufferedWriter.write(" ");
+                    }
+                    else {
+                        bufferedWriter.write("0");
+                    }
 
+                }
+                bufferedWriter.newLine();
             }
-            System.out.println();
+            bufferedWriter.newLine();
+            bufferedWriter.newLine();
+            bufferedWriter.close();
+            writer.close();
+
         }
-        System.out.println();
+        catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
 

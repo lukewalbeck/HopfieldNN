@@ -6,7 +6,7 @@ public class Hopfield {
     private int m_length;
     private int m_width;
 
-    public Hopfield(int length, int width) { //size must be equal to sampleDat.length
+    public Hopfield(int length, int width) {
         m_length = length;
         m_width = width;
         weights = new int[m_length][m_width];
@@ -29,7 +29,8 @@ public class Hopfield {
     //testDat is a single pattern, will be run n pattern times to test, and output n times in main
     public int[] test(int[] testDat, int numElements, int numPattern) {
         int from = numElements * numPattern;
-        int[] y = Arrays.copyOfRange(testDat, from, from+100);
+        testDat = Arrays.copyOfRange(testDat, from, from+100);
+        int[] y = testDat;
         int[] ordering = createOrdering(y.length);
         boolean converged = false;
         while(!converged) {
