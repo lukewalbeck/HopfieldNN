@@ -30,7 +30,7 @@ public class Hopfield {
     public int[] test(int[] testDat, int numElements, int numPattern) {
         int from = numElements * numPattern;
         testDat = Arrays.copyOfRange(testDat, from, from+100);
-        int[] y = testDat;
+        int[] y = createCopy(testDat);
         int[] ordering = createOrdering(y.length);
         boolean converged = false;
         while(!converged) {
@@ -59,6 +59,14 @@ public class Hopfield {
         }
         shuffleArray(array);
         return array;
+    }
+
+    private int[] createCopy(int[] array) {
+        int[] newArr = new int[array.length];
+        for(int i = 0; i < newArr.length; i++) {
+            newArr[i] = array[i];
+        }
+        return  newArr;
     }
 
     private static void shuffleArray(int[] array) {

@@ -136,6 +136,7 @@ public class Project2 {
                 break;
             default:
                 System.out.println("Unrecognized option");
+                menu();
                 break;
 
         }
