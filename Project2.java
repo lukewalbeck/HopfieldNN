@@ -1,7 +1,88 @@
 import java.io.*;
+import java.util.Arrays;
 import java.util.Scanner;
 
 public class Project2 {
+
+    public static int[] readTrainingPatterns(String fileName) {
+        try{
+            BufferedReader bf = new BufferedReader(new FileReader(fileName));
+            String currLine;
+            int numPatterns = 0;
+            int numItems = 0;
+            int numLength = 0;
+            int lineCount = 0;
+            boolean showNothing = true;
+            //reading for total num and patterns
+            while((currLine = bf.readLine()) != null) {
+
+                String[] splitLine = currLine.split("\\s+");
+
+
+                if(lineCount == 0) {
+                    numItems = Integer.parseInt(splitLine[0]); //find numItems -- 1st line
+                }
+                else if(lineCount == 1) {
+                    numPatterns = Integer.parseInt(splitLine[0]); //find numPatterns -- 2nd line
+                }
+                else if(lineCount == 2){
+                    //nothing
+                }
+                else {
+                    if(!currLine.equals("")) {
+                        numLength++;
+                        showNothing = false;
+                    }
+                    else if(currLine.equals("") && showNothing) {
+                        numLength++;
+                    }
+                    else {
+                        int numWidth = (numItems / numLength);
+                        int[] vals = new int[3];
+                        vals[0] = numItems;
+                        vals[1] = numPatterns;
+                        vals[2] = numLength;
+                        return vals;
+                    }
+                }
+                lineCount++;
+            }
+        }
+        catch(Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public static int[] readTestingFile(String fileName) {
+        try {
+            BufferedReader bf = new BufferedReader(new FileReader(fileName));
+            String currLine;
+            int numPatterns = 0;
+            int numItems = 0;
+            int lineCount = 0;
+            while((currLine = bf.readLine()) != null) {
+
+                String[] splitLine = currLine.split("\\s+");
+
+                if(lineCount == 0) {
+                    numItems = Integer.parseInt(splitLine[0]); //find numItems -- 1st line
+                }
+                else if(lineCount == 1) {
+                    numPatterns = Integer.parseInt(splitLine[0]); //find numPatterns -- 2nd line
+                    int[] vals = new int[2];
+                    vals[0] = numItems;
+                    vals[1] = numPatterns;
+                    return vals;
+                }
+                lineCount++;
+            }
+        }
+        catch(Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 
     public static int[] readDataFile(String fileName, int length, int width, int numPatterns) {
         try {
@@ -10,6 +91,10 @@ public class Project2 {
             String currLine;
             int index = 0;
             int lineCount = 0;
+            int skipThreeLines = 3;
+            for(int i = 0; i < 3; i++) {
+                bf.readLine();
+            }
             while((currLine = bf.readLine()) != null) {
                 lineCount++;
                 if(lineCount == width) {
@@ -35,7 +120,7 @@ public class Project2 {
 
                 }
                 else {
-                    for(int i = 0; i < width; i++) {
+                    for(int i = 0; i < length; i++) {
                         initialArray[index++] = -1;
                     }
                 }
@@ -48,19 +133,37 @@ public class Project2 {
         return null;
     }
 
-    public static void printMatrix(int[] array, int length, int width) {
+    public static void printMatrix(int[] training, int[] testing, int[] outArr, int length, int width, String output) {
         try {
-            FileWriter writer = new FileWriter("output.txt", true);
+            FileWriter writer = new FileWriter(output, true);
             BufferedWriter bufferedWriter = new BufferedWriter(writer);
+
             for(int i = 0; i < length; i++) {
                 for(int j = 0; j < width; j++) {
-                    if(array[(j*length) + i] == -1) {
+                    if(training[(j*length) + i] == -1) {
                         bufferedWriter.write(" ");
                     }
                     else {
                         bufferedWriter.write("0");
                     }
-
+                }
+                bufferedWriter.write("\t\t");
+                for(int j = 0; j < width; j++) {
+                    if(testing[(j*length) + i] == -1) {
+                        bufferedWriter.write(" ");
+                    }
+                    else {
+                        bufferedWriter.write("0");
+                    }
+                }
+                bufferedWriter.write("\t\t");
+                for(int j = 0; j < width; j++) {
+                    if(outArr[(j*length) + i] == -1) {
+                        bufferedWriter.write(" ");
+                    }
+                    else {
+                        bufferedWriter.write("0");
+                    }
                 }
                 bufferedWriter.newLine();
             }
@@ -86,50 +189,28 @@ public class Project2 {
         displayMenu();
         switch(in.nextInt()) {
             case 1:
-                System.out.println("Enter number of patterns within file\n");
-                int numPatterns = in.nextInt();
-                System.out.println("Enter dimension length of single pattern\n");
-                int length = in.nextInt();
-                System.out.println("Enter dimension width of single pattern\n");
-                int width = in.nextInt();
-                int numElements = length * width;
-                System.out.println("Confirming number of elements in single pattern is " + numElements + "\n");
-
-
-                System.out.println("Last question: Enter valid name for training data file (with .txt)\n");
+                System.out.println("Enter valid name for training data file (with .txt)\n");
                 in.nextLine();
                 String trainFile = in.nextLine();
-                int[] training = readDataFile(trainFile, length, width, numPatterns);
-                Hopfield hoppy = new Hopfield(numElements, numElements);
-                for(int i = 0; i < numPatterns; i++) {
-                    hoppy.train(training, i);
+                int[] vals = readTrainingPatterns(trainFile);
+                if(vals != null) {
+                    int numElements = vals[0];
+                    int numPatterns = vals[1];
+                    int length = vals[2];
+                    int width = numElements / length;
+                    System.out.println("Number of patterns in single pattern is " + numPatterns);
+                    System.out.println("Number of elements in single pattern is " + numElements);
+                    System.out.println("Dimensions are " + length + " by " + width);
+                    int[] training = readDataFile(trainFile, length, width, numPatterns);
+                    Hopfield hoppy = new Hopfield(numElements, numElements);
+                    for(int i = 0; i < numPatterns; i++) {
+                        hoppy.train(training, i);
+                    }
+                    testMenu(length, width, hoppy, training);
                 }
-
-                System.out.println("Training complete ...\nEnter testing data filename (with .txt)\n(Be sure it has same dimensions as training data please :)\n");
-                String testFile = in.nextLine();
-                System.out.println("Pretty please enter name of file to output data to (give it a .txt extension)\n");
-                String output = in.nextLine();
-                int[] testing = readDataFile(testFile, length, width, numPatterns);
-
-                //empty previous contents of file
-                try {
-                    FileWriter writer = new FileWriter(output, false);
-                    writer.write("");
-                    writer.close();
+                else {
+                    System.out.println("An error has occurred");
                 }
-                catch(IOException e) {
-                    e.printStackTrace();
-                }
-
-
-                for(int i = 0; i < numPatterns; i++) {
-                    int[] printMe = hoppy.test(testing, numElements, i);
-                    printMatrix(printMe, length, width);
-                }
-
-
-                System.out.println("Finished, check " + output + " for correctness and completeness");
-                subMenu();
                 break;
             case 2:
                 System.out.println("Exited program");
@@ -139,6 +220,65 @@ public class Project2 {
                 menu();
                 break;
 
+        }
+    }
+
+    public static void testMenu(int length, int width, Hopfield hoppy, int[] training) {
+        System.out.println("Training Complete!\nSelection for Testing\n");
+        System.out.println("1) Test");
+        System.out.println("2) Exit program");
+        Scanner in = new Scanner(System.in);
+        switch(in.nextInt()) {
+            case 1:
+                System.out.println("Please enter name for testing file");
+                in.nextLine();
+                String testFile = in.nextLine();
+                int[] vals = readTestingFile(testFile);
+                if(vals != null) {
+                    int numElements = vals[0];
+                    int numPatterns = vals[1];
+                    if((length * width) != numElements) {
+                        System.out.println("Something went wrong with the test file, does not match training file");
+                    }
+                    else {
+                        int[] testing = readDataFile(testFile, length, width, numPatterns);
+                        System.out.println("Testing complete, please enter name for output text file");
+                        String output = in.nextLine();
+                        //empty previous contents of file
+                        try {
+                            FileWriter writer = new FileWriter(output, false);
+                            writer.write("");
+                            BufferedWriter bufferedWriter = new BufferedWriter(writer);
+
+                            bufferedWriter.write("Training data\t");
+                            bufferedWriter.write("Testing data\t");
+                            bufferedWriter.write("Output data\n");
+                            bufferedWriter.close();
+                            writer.close();
+                        }
+                        catch(IOException e) {
+                            e.printStackTrace();
+                        }
+                        for(int i = 0; i < numPatterns; i++) {
+                            int from = numElements * i;
+                            int [] trainArr = Arrays.copyOfRange(training, from, from+numElements);
+                            int[] testArr = Arrays.copyOfRange(testing, from, from+numElements);
+                            int[] printMe = hoppy.test(testing, numElements, i);
+                            printMatrix(trainArr, testArr, printMe, length, width, output);
+                        }
+                        System.out.println("Finished, check " + output + " for correctness and completeness");
+
+                        subMenu();
+                        break;
+                    }
+                }
+                break;
+            case 2:
+                System.out.println("Exited program");
+                break;
+            default:
+                System.out.println("Unrecognized option");
+                break;
         }
     }
 
@@ -157,11 +297,14 @@ public class Project2 {
                 System.out.println("Unrecognized option");
                 break;
         }
+        in.close();
+
     }
 
 
 
     public static void main(String[] args) {
         menu();
+        //readTrainingPatterns("training.txt");
     }
 }

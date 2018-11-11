@@ -29,16 +29,21 @@ public class Hopfield {
     //testDat is a single pattern, will be run n pattern times to test, and output n times in main
     public int[] test(int[] testDat, int numElements, int numPattern) {
         int from = numElements * numPattern;
-        testDat = Arrays.copyOfRange(testDat, from, from+100);
+        int count = 0;
+        testDat = Arrays.copyOfRange(testDat, from, from+numElements);
         int[] y = createCopy(testDat);
         int[] ordering = createOrdering(y.length);
         boolean converged = false;
         while(!converged) {
+            count = 0;
             for(int i = 0; i < ordering.length; i++) {
                 int index = ordering[i];
                 int newY = computationOfY(index, testDat, y);
                 if(newY != 0) {
-                    y[index] = newY;
+                    if(y[index] != newY) {
+                        y[index] = newY;
+                        count++;
+                    }
                 }
             }
             //compare y to testDat, if not equal, testDat equals y
@@ -82,15 +87,15 @@ public class Hopfield {
     }
 
     private int computationOfY(int index, int[] x, int[] y) {
-        int sum = x[index];
+        int sum = y[index];
         for(int i = 0; i < y.length; i++) {
             sum += (y[i] * weights[index][i]); //accessing weights row-wise
         }
 
-        if(sum > 1) {
+        if(sum > 0) {
             return 1;
         }
-        else if(sum < 1) {
+        else if(sum < 0) {
             return -1;
         }
         else {
