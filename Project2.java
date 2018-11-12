@@ -54,35 +54,41 @@ public class Project2 {
         return null;
     }
 
-    public static int[] readTestingFile(String fileName) {
+    public static Hopfield readWeights(String weightFile) {
         try {
-            BufferedReader bf = new BufferedReader(new FileReader(fileName));
-            String currLine;
-            int numPatterns = 0;
-            int numItems = 0;
-            int lineCount = 0;
-            while((currLine = bf.readLine()) != null) {
+            FileReader f = new FileReader(weightFile);
+            BufferedReader bf = new BufferedReader(f);
 
-                String[] splitLine = currLine.split("\\s+");
+            LineNumberReader count = new LineNumberReader(new FileReader(weightFile));
+            while(count.skip(Long.MAX_VALUE) > 0){
 
-                if(lineCount == 0) {
-                    numItems = Integer.parseInt(splitLine[0]); //find numItems -- 1st line
-                }
-                else if(lineCount == 1) {
-                    numPatterns = Integer.parseInt(splitLine[0]); //find numPatterns -- 2nd line
-                    int[] vals = new int[2];
-                    vals[0] = numItems;
-                    vals[1] = numPatterns;
-                    return vals;
-                }
-                lineCount++;
             }
+            int width = count.getLineNumber();
+            int[][] weights = new int[width][width];
+
+            String currLine;
+            int j = 0;
+            while((currLine = bf.readLine()) != null) {
+                String[] splitLine = currLine.split("\\s+");
+                for(int i = 0; i < splitLine.length; i++) {
+                    weights[j][i] = Integer.parseInt(splitLine[i]);
+                }
+                j++;
+            }
+            Hopfield hoppy = new Hopfield(width, width);
+            hoppy.loadWeights(weights);
+            return hoppy;
         }
-        catch(Exception e) {
+        catch(IOException e) {
             e.printStackTrace();
+        }
+        catch(NumberFormatException n) {
+            n.printStackTrace();
+            System.out.println("Something went wrong with parsing");
         }
         return null;
     }
+
 
     public static int[] readDataFile(String fileName, int length, int width, int numPatterns) {
         try {
@@ -139,15 +145,17 @@ public class Project2 {
             BufferedWriter bufferedWriter = new BufferedWriter(writer);
 
             for(int i = 0; i < length; i++) {
-                for(int j = 0; j < width; j++) {
-                    if(training[(j*length) + i] == -1) {
-                        bufferedWriter.write(" ");
+                if(training != null) {
+                    for(int j = 0; j < width; j++) {
+                        if(training[(j*length) + i] == -1) {
+                            bufferedWriter.write(" ");
+                        }
+                        else {
+                            bufferedWriter.write("0");
+                        }
                     }
-                    else {
-                        bufferedWriter.write("0");
-                    }
+                    bufferedWriter.write("\t\t");
                 }
-                bufferedWriter.write("\t\t");
                 for(int j = 0; j < width; j++) {
                     if(testing[(j*length) + i] == -1) {
                         bufferedWriter.write(" ");
@@ -175,22 +183,23 @@ public class Project2 {
         }
         catch (IOException e) {
             e.printStackTrace();
+            System.out.println("Something went wrong with " + output);
         }
     }
 
     public static void displayMenu() {
         System.out.println("Welcome to Hopfield Neural Network Program!\n");
         System.out.println("1) Read in training data and testing data for Hopfield Neural Network");
-        System.out.println("2) Exit Program");
+        System.out.println("2) Read in weights data and testing data for Hopfield Neural Network");
+        System.out.println("3) Exit Program");
     }
 
     public static void menu() {
         Scanner in = new Scanner(System.in);
         displayMenu();
-        switch(in.nextInt()) {
-            case 1:
+        switch(in.nextLine()) {
+            case "1":
                 System.out.println("Enter valid name for training data file (with .txt)\n");
-                in.nextLine();
                 String trainFile = in.nextLine();
                 int[] vals = readTrainingPatterns(trainFile);
                 if(vals != null) {
@@ -212,7 +221,15 @@ public class Project2 {
                     System.out.println("An error has occurred");
                 }
                 break;
-            case 2:
+            case "2":
+                System.out.println("Enter valid name for weights data file\n");
+                String weightFileName = in.nextLine();
+                Hopfield hoppy = readWeights(weightFileName);
+                if(hoppy != null) {
+                    System.out.println("Successfully loaded weight data");
+                    testMenu(0, 0, hoppy, null);
+                }
+            case "3":
                 System.out.println("Exited program");
                 break;
             default:
@@ -224,25 +241,31 @@ public class Project2 {
     }
 
     public static void testMenu(int length, int width, Hopfield hoppy, int[] training) {
-        System.out.println("Training Complete!\nSelection for Testing\n");
+        System.out.println("Training Complete! Weights saved in weights.txt\nSelection for Testing\n");
         System.out.println("1) Test");
         System.out.println("2) Exit program");
         Scanner in = new Scanner(System.in);
-        switch(in.nextInt()) {
-            case 1:
+        switch(in.nextLine()) {
+            case "1":
                 System.out.println("Please enter name for testing file");
-                in.nextLine();
                 String testFile = in.nextLine();
-                int[] vals = readTestingFile(testFile);
+                int[] vals = readTrainingPatterns(testFile);
                 if(vals != null) {
                     int numElements = vals[0];
                     int numPatterns = vals[1];
+                    int numLength = vals[2];
+
+                    if(length == 0 && width == 0) {
+                        length = numLength;
+                        width = numElements / numLength;
+                    }
+
                     if((length * width) != numElements) {
                         System.out.println("Something went wrong with the test file, does not match training file");
                     }
                     else {
                         int[] testing = readDataFile(testFile, length, width, numPatterns);
-                        System.out.println("Testing complete, please enter name for output text file");
+                        System.out.println("Please enter name for output text file");
                         String output = in.nextLine();
                         //empty previous contents of file
                         try {
@@ -250,9 +273,12 @@ public class Project2 {
                             writer.write("");
                             BufferedWriter bufferedWriter = new BufferedWriter(writer);
 
-                            bufferedWriter.write("Training data\t");
+                            if(training != null) {
+                                bufferedWriter.write("Training data\t");
+                            }
+
                             bufferedWriter.write("Testing data\t");
-                            bufferedWriter.write("Output data\n");
+                            bufferedWriter.write("Output data\n\n");
                             bufferedWriter.close();
                             writer.close();
                         }
@@ -261,40 +287,44 @@ public class Project2 {
                         }
                         for(int i = 0; i < numPatterns; i++) {
                             int from = numElements * i;
-                            int [] trainArr = Arrays.copyOfRange(training, from, from+numElements);
+                            int[] trainArr = null;
+                            if(training != null) {
+                                trainArr = Arrays.copyOfRange(training, from, from+numElements);
+                            }
                             int[] testArr = Arrays.copyOfRange(testing, from, from+numElements);
                             int[] printMe = hoppy.test(testing, numElements, i);
                             printMatrix(trainArr, testArr, printMe, length, width, output);
                         }
-                        System.out.println("Finished, check " + output + " for correctness and completeness");
+                        System.out.println("Finished training, check " + output + " for correctness and completeness");
 
-                        subMenu();
+                        endMenu();
                         break;
                     }
                 }
                 break;
-            case 2:
+            case "2":
                 System.out.println("Exited program");
                 break;
             default:
                 System.out.println("Unrecognized option");
+                testMenu(length, width, hoppy, training);
                 break;
         }
     }
 
-    public static void subMenu() {
+    public static void endMenu() {
         System.out.println("1) Try again");
         System.out.println("2) Exit program");
         Scanner in = new Scanner(System.in);
-        switch(in.nextInt()) {
-            case 1:
+        switch(in.nextLine()) {
+            case "1":
                 menu();
                 break;
-            case 2:
-                System.out.println("Exited program");
+            case "2":
                 break;
             default:
                 System.out.println("Unrecognized option");
+                endMenu();
                 break;
         }
         in.close();

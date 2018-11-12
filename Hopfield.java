@@ -1,3 +1,7 @@
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.Random;
 
@@ -24,6 +28,38 @@ public class Hopfield {
                 }
             }
         }
+        printWeights();
+    }
+
+
+    public void loadWeights(int[][] sampleDat) {
+        weights = sampleDat;
+    }
+
+    public void printWeights() {
+        try {
+            FileWriter writer = new FileWriter("weights.txt", false);
+            writer.write("");
+            PrintWriter printWriter = new PrintWriter(writer);
+
+            for(int i = 0; i < m_length; i++) {
+                for(int j = 0; j < m_width; j++) {
+                    int num = weights[i][j];
+                    String print = Integer.toString(num);
+                    printWriter.write(print);
+                    printWriter.write(" ");
+                }
+                printWriter.write("\n");
+            }
+
+            printWriter.close();
+            writer.close();
+        }
+        catch(IOException e) {
+            e.printStackTrace();
+        }
+
+
     }
 
     //testDat is a single pattern, will be run n pattern times to test, and output n times in main
