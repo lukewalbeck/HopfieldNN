@@ -1,4 +1,10 @@
-import java.io.BufferedWriter;
+/*
+Hopfield Java Class
+Author: Luke Walbeck
+The following class is used for the modification of weights through testing and training
+a 2 dimensional array
+ */
+
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -31,11 +37,12 @@ public class Hopfield {
         printWeights();
     }
 
-
+    //getter for weights
     public void loadWeights(int[][] sampleDat) {
         weights = sampleDat;
     }
 
+    //prints weights to output weights.txt file
     public void printWeights() {
         try {
             FileWriter writer = new FileWriter("weights.txt", false);
@@ -93,6 +100,11 @@ public class Hopfield {
         return y;
     }
 
+    /*
+    The following methods below assist with the testing algorithm
+    such that there can be a deep copy of an array, a random order
+    and an activation function of Yin
+     */
     private int[] createOrdering(int size) {
         int[] array = new int[size];
         for(int i = 0; i < size; i++) {

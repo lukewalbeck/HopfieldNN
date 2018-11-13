@@ -1,9 +1,22 @@
+/*
+Project 2 Main Class
+Author: Lucas Walbeck
+The following class deals with all the file reading and error handling regarding
+the Hopfield Neural Network c;ass
+ */
+
+
+
 import java.io.*;
 import java.util.Arrays;
 import java.util.Scanner;
 
 public class Project2 {
 
+    /*
+    Reads the training method in order to determine the number of items, patterns,
+    and dimensions of each pattern
+     */
     public static int[] readTrainingPatterns(String fileName) {
         try{
             BufferedReader bf = new BufferedReader(new FileReader(fileName));
@@ -17,7 +30,6 @@ public class Project2 {
             while((currLine = bf.readLine()) != null) {
 
                 String[] splitLine = currLine.split("\\s+");
-
 
                 if(lineCount == 0) {
                     numItems = Integer.parseInt(splitLine[0]); //find numItems -- 1st line
@@ -37,7 +49,6 @@ public class Project2 {
                         numLength++;
                     }
                     else {
-                        int numWidth = (numItems / numLength);
                         int[] vals = new int[3];
                         vals[0] = numItems;
                         vals[1] = numPatterns;
@@ -49,11 +60,16 @@ public class Project2 {
             }
         }
         catch(Exception e) {
-            e.printStackTrace();
+            System.out.println("File issue try again");
+            return null;
         }
         return null;
     }
 
+    /*
+    Reads in a 2 dimensional weights file and creates a Hopfield
+    object with initialized weights from this file
+     */
     public static Hopfield readWeights(String weightFile) {
         try {
             FileReader f = new FileReader(weightFile);
@@ -89,7 +105,12 @@ public class Project2 {
         return null;
     }
 
-
+    /*
+    Reads in the data file (training or testing) after knowing the dimensions and
+    number of patterns within the file, such that it can parse it correctly without
+    any errors
+    returns a single dimensional array with all information
+     */
     public static int[] readDataFile(String fileName, int length, int width, int numPatterns) {
         try {
             BufferedReader bf = new BufferedReader(new FileReader(fileName));
@@ -134,11 +155,16 @@ public class Project2 {
             return initialArray;
         }
         catch(Exception ex) {
-            ex.getMessage();
+            ex.printStackTrace();
+            System.out.println("Please try again");
+            return null;
         }
-        return null;
     }
 
+    /*
+    Prints the matrix after testing has occurred.
+    Prints the training (if applicable) testing and output matrices
+     */
     public static void printMatrix(int[] training, int[] testing, int[] outArr, int length, int width, String output) {
         try {
             FileWriter writer = new FileWriter(output, true);
@@ -147,7 +173,7 @@ public class Project2 {
             for(int i = 0; i < length; i++) {
                 if(training != null) {
                     for(int j = 0; j < width; j++) {
-                        if(training[(j*length) + i] == -1) {
+                        if(training[(i*length) + j] == -1) {
                             bufferedWriter.write(" ");
                         }
                         else {
@@ -157,7 +183,7 @@ public class Project2 {
                     bufferedWriter.write("\t\t");
                 }
                 for(int j = 0; j < width; j++) {
-                    if(testing[(j*length) + i] == -1) {
+                    if(testing[(i*length) + j] == -1) {
                         bufferedWriter.write(" ");
                     }
                     else {
@@ -166,7 +192,7 @@ public class Project2 {
                 }
                 bufferedWriter.write("\t\t");
                 for(int j = 0; j < width; j++) {
-                    if(outArr[(j*length) + i] == -1) {
+                    if(outArr[(i*length) + j] == -1) {
                         bufferedWriter.write(" ");
                     }
                     else {
@@ -187,6 +213,9 @@ public class Project2 {
         }
     }
 
+    /*
+    Basic menu methods below for navigation and user choice / error handling
+     */
     public static void displayMenu() {
         System.out.println("Welcome to Hopfield Neural Network Program!\n");
         System.out.println("1) Read in training data and testing data for Hopfield Neural Network");
@@ -199,9 +228,15 @@ public class Project2 {
         displayMenu();
         switch(in.nextLine()) {
             case "1":
-                System.out.println("Enter valid name for training data file (with .txt)\n");
+                System.out.println("Enter valid name for training data file again\n");
                 String trainFile = in.nextLine();
                 int[] vals = readTrainingPatterns(trainFile);
+                while(vals == null) {
+                    System.out.println("Enter valid name for training data file again\n");
+                    trainFile = in.nextLine();
+                    vals = readTrainingPatterns(trainFile);
+                }
+
                 if(vals != null) {
                     int numElements = vals[0];
                     int numPatterns = vals[1];
@@ -216,9 +251,6 @@ public class Project2 {
                         hoppy.train(training, i);
                     }
                     testMenu(length, width, hoppy, training);
-                }
-                else {
-                    System.out.println("An error has occurred");
                 }
                 break;
             case "2":
@@ -250,6 +282,11 @@ public class Project2 {
                 System.out.println("Please enter name for testing file");
                 String testFile = in.nextLine();
                 int[] vals = readTrainingPatterns(testFile);
+                while(vals == null) {
+                    System.out.println("Please enter name for testing file again");
+                    testFile = in.nextLine();
+                    vals = readTrainingPatterns(testFile);
+                }
                 if(vals != null) {
                     int numElements = vals[0];
                     int numPatterns = vals[1];
@@ -335,6 +372,5 @@ public class Project2 {
 
     public static void main(String[] args) {
         menu();
-        //readTrainingPatterns("training.txt");
     }
 }
